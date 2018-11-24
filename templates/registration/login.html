@@ -1,0 +1,43 @@
+{% extends "base.html" %}
+
+{% block title %}Log In{% endblock %}
+
+{% block content %}
+
+  {% if next %}
+    {% if user.is_authenticated %}
+      <p>Nie masz dostępu do tej strony.</p>
+    {% else %}
+      <h2>Zaloguj się</h2>
+    {% endif %}
+  {% endif %}
+
+  <form method="post" action="{% url 'login' %}">
+    {% csrf_token %}
+
+    <table class="table table-borderless">
+      <tbody>
+        <tr class="form-group">
+          <td width="20%" class="text-right">Nazwa użytkownika (login):</td>
+          <td>{{ form.username }}</td>
+        </tr>
+        <tr class="form-group">
+          <td class="text-right">Hasło:</td>
+          <td>{{ form.password }}</td>
+        </tr>
+      </tbody>
+    </table>
+    {% if form.errors %}
+      <p class="text-danger">Niepoprawny login lub hasło. Spróbuj ponownie.</p>
+    {% endif %}
+    <div>
+      <input class="btn btn-primary" type="submit" value="Zaloguj się" />
+    </div>
+  </form>
+  {# Assumes you setup the password_reset view in your URLconf #}
+  <p class="small"><a href="{% url 'password_reset' %}">Nie pamiętasz hasła?</a></p>
+  <hr/>
+  <p>Ty też możesz być członkiem!</p>
+  <a href="{% url 'signup'%}" class="btn btn-success">Zgłoś się</a>
+
+{% endblock %}

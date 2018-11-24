@@ -1,0 +1,55 @@
+{% extends 'base.html' %}
+
+{% block title %}
+  {% if my_books_mark %}
+    Moje książki
+  {% else %}
+    Książki innych
+  {% endif %}
+{% endblock %}
+
+{% block content %}
+
+  {% if my_books_mark %}
+    <h3 class="text-info">Moje książki</h3>
+  {% else %}
+    <h3 class="text-info">Książki do wypożyczenia</h3>
+  {% endif %}
+
+  <ul class="list-group list-group-flush">
+    {% for book in books %}
+      <li class="list-group-item">
+        <a href="{% url 'book_detail' book.pk %}">{{ book.title }}</a>
+        <span class="text-secondary">({{ book.author }})</span>,
+        udostępniona przez <a href="{% url 'member_detail' book.owner.pk %}">{{ book.owner }}</a>,
+        {% if book.is_unavailable %}<span class="text-danger">{% endif %}
+          {{ book.display_status }}
+          {% if book.is_borrowed %}
+            przez <a href="{% url 'member_detail' book.display_borrower.pk %}">{{ book.display_borrower }}</a>
+          {% endif %}
+        </span>,
+        zainteresowanych: {{ book.count_interested }}
+        {% if user == book.owner %}
+          {% if book.is_borrowed %}
+            <a href="{% url 'return_book' book.pk book.display_borrower.pk %}" class="btn btn-primary btn-sm">
+              Zwrócona
+            </a>
+          {% endif %}
+          <a href="{% url 'book_update' book.pk %}" class="btn btn-primary btn-sm">Edytuj</a>
+          {% if not book.is_borrowed %}
+            <a href="{% url 'book_delete' book.pk %}" class="btn btn-danger btn-sm">Usuń</a>
+          {% endif %}
+        {% else %}
+          {% if user in book.interested_list %}
+            <a href="{% url 'withdraw_interest' book.pk %}" class="btn btn-danger btn-sm">Rezygnuję</a>
+          {% elif user == book.display_borrower %}
+            <span class="btn btn-outline-success btn-sm disabled">Mam ją!</span>
+          {% else %}
+            <a href="{% url 'show_interest' book.pk %}" class="btn btn-primary btn-sm">Chcę wypożyczyć</a>
+          {% endif %}
+        {% endif %}
+      </li>
+    {% endfor %}
+  </ul>
+
+{% endblock %}

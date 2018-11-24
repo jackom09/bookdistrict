@@ -1,0 +1,45 @@
+{% extends 'base.html' %}
+
+{% block title %}Lista mieszkańców{% endblock %}
+
+{% block content %}
+
+  <div class="container">
+    <h3 class="text-info">Lista mieszkańców Dzielnicy książek</h3>
+      <div class="table-responsive-sm">
+        <table class="table table-borderless table-sm">
+          <thead class="thead-light">
+            <tr>
+              <th class="text-right col-sm-1">Lp.</th>
+              <th class="col-sm-2">Login:</th>
+              <th class="col-sm-2">Imię:</th>
+              <th class="col-sm-2">Nazwisko:</th>
+              {% if user.is_superuser %}
+                <th class="col-sm-2">Adres email:</th>
+              {% endif %}
+              <th class="text-center col-sm-1">Liczba udostępnionych książek:</th>
+              <th></th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for member in members %}
+              <tr>
+                <td class="text-right">{{ forloop.counter }}</td>
+                <td><a href="{% url 'member_detail' member.pk %}">{{ member.username }}</a></td>
+                <td>{{ member.first_name }}</td>
+                <td>{{ member.last_name }}</td>
+                {% if user.is_superuser %}
+                  <td>{{ member.email }}</td>
+                {% endif %}
+                <td class="text-center">{{ member.count_no_of_books_owned }}</td>
+                {% if user.is_superuser %}
+                  <td><a class="btn btn-danger btn-sm" href="{% url 'delete_member' member.pk %}">Usuń</a></td>
+                {% endif %}
+              </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+  </div>
+
+{% endblock %}

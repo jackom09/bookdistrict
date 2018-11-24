@@ -1,0 +1,62 @@
+{% extends 'base.html' %}
+
+{% block title %}Sign up{% endblock %}
+
+{% block content %}
+  <h2>Zgłoś się do klubu</h2>
+
+  <form method="post">
+    {% csrf_token %}
+
+    <table class="table table-borderless">
+      <tbody>
+        <tr><td colspan="2" class="font-weight-bold">Dane obowiązkowe:</td></tr>
+          <tr class="form-group">
+            <td width="20%" class="text-right">Nazwa użytkownika (login):</td>
+            <td>{{ form.username }}</td>
+            <td>
+              {% if form.username.help_text %}
+                <span class="text-muted small">{{ form.username.help_text }}</span>
+              {% endif %}
+            </td>
+          </tr>
+          <tr class="form-group">
+            <td class="text-right">Hasło:</td>
+            <td>{{ form.password1 }}</td>
+            <td>
+              {% if form.password1.help_text %}
+                <span class="text-muted small">{{ form.password1.help_text }}</span>
+              {% endif %}
+            </td>
+          </tr>
+          <tr class="form-group">
+            <td class="text-right">Powtórz hasło:</td>
+            <td>{{ form.password2 }}</td>
+            <td>
+              {% if form.password2.help_text %}
+                <span class="text-muted small">{{ form.password2.help_text }}</span>
+              {% endif %}
+            </td>
+          </tr>
+        <tr><td colspan="2"></td></tr>
+        <tr><td colspan="2" class="font-weight-bold">Dane opcjonalne:</td></tr>
+          <tr class="form-group">
+            <td class="text-right">Imię:</td>
+            <td>{{ form.first_name }}</td>
+          </tr>
+          <tr class="form-group">
+            <td class="text-right">Nazwisko:</td>
+            <td>{{ form.last_name }}</td>
+          </tr>
+          <tr class="form-group">
+            <td class="text-right">E-mail:</td>
+            <td>{{ form.email }}</td>
+          </tr>
+      </tbody>
+    </table>
+    {% if form.errors %}
+      <p class="text-danger">Niepoprawny login lub hasło.</p>
+    {% endif %}
+    <input class="btn btn-primary" type="submit" value="Zgłoś się" />
+  </form>
+{% endblock %}

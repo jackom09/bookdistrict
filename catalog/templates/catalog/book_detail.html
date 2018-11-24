@@ -1,0 +1,82 @@
+{% extends 'base.html' %}
+
+{% block title %}Szczegóły książki{% endblock %}
+
+{% block content %}
+
+  <h3 class="text-info">
+    "{{ book.title }}"
+    <span>
+      {% if user == book.owner %}
+        <a href="{% url 'book_update' book.pk %}" class="btn btn-primary">Edytuj</a>
+      {% else %}
+        {% if user in book.interested_list %}
+          <a href="{% url 'withdraw_interest' book.pk %}" class="btn btn-danger">Rezygnuję</a>
+        {% elif user == book.display_borrower %}
+          <span class="btn btn-outline-success disabled">Mam ją!</span>
+        {% else %}
+          <a href="{% url 'show_interest' book.pk %}" class="btn btn-primary">Chcę wypożyczyć</a>
+        {% endif %}
+      {% endif %}
+    </span>
+  </h3>
+
+  <table class="table">
+    <tbody>
+      <tr><td>Autor:</td><td>{{ book.author }}</td></tr>
+      <tr><td>Liczba stron:</td><td>{{ book.no_of_pages }}</td></tr>
+      <tr><td>Kategoria:</td><td>{{ book.genre }}</td></tr>
+      <tr><td>Opis:</td><td>{{ book.description }}</td></tr>
+      <tr>
+        <td>Właściciel:</td>
+        <td>
+          <a href="{% url 'member_detail' book.owner.pk %}">
+            {{ book.owner }}
+          </a>
+        </td>
+      </tr>
+      <tr>
+        <td>Status:</td>
+        <td>
+          {{ book.display_status }}
+          {% if book.is_borrowed %}
+            przez
+            <a href="{% url 'member_detail' book.display_borrower.pk %}">
+              {{ book.display_borrower.username }}
+            </a>
+            {% if user == book.owner %}
+              <a href="{% url 'return_book' book.pk book.display_borrower.pk %}" class="btn btn-primary btn-sm">
+                Potwierdź zwrot
+              </a>
+            {% endif %}
+          {% endif %}
+        </td>
+      </tr>
+    </tbody>
+  </table>
+  <hr/>
+  <div>
+      {% if user == book.owner and not book.is_borrowed %}
+        <a href="{% url 'book_delete' book.pk %}" class="btn btn-danger btn-sm">Usuń</a>
+      {% endif %}
+  </div>
+  <hr/>
+
+  <h5 class="text-info">Zainteresowani wypożyczeniem:</h5>
+
+  <ul class="list-group list-group-flush">
+    {% for member in book.interested_list %}
+      <li class="list-group-item">
+        <a href="{% url 'member_detail' member.pk %}">
+          {{ member.first_name }}
+          {{ member.last_name }}
+          (login: {{ member.username }})
+        </a>
+        {% if book.is_available and user == book.owner %}
+          <a href="{% url 'borrow_book' book.pk member.pk %}" class="btn btn-primary btn-sm">Wypożycz</a>
+        {% endif %}
+      </li>
+    {% endfor %}
+  </ul>
+
+{% endblock %}

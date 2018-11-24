@@ -1,0 +1,29 @@
+{% extends 'base.html' %}
+
+{% block title %}Edytuj swoje dane{% endblock %}
+
+{% block content %}
+  <h2>Edytuj swoje dane</h2>
+
+  <form method="post">
+    {% csrf_token %}
+
+    <table class="table table-borderless">
+      <tbody>
+          <tr class="form-group">
+            <td class="text-right">Imię:</td>
+            <td>{{ form.first_name }}</td>
+          </tr>
+          <tr class="form-group">
+            <td class="text-right">Nazwisko:</td>
+            <td>{{ form.last_name }}</td>
+          </tr>
+          <tr class="form-group">
+            <td class="text-right">E-mail:</td>
+            <td>{{ form.email }}</td>
+          </tr>
+      </tbody>
+    </table>
+    <input class="btn btn-primary" type="submit" value="Zapisz" />
+  </form>
+{% endblock %}

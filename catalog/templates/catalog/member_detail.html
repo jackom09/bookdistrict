@@ -1,0 +1,55 @@
+{% extends 'base.html' %}
+
+{% block title %}Dane mieszkańca{% endblock %}
+
+{% block content %}
+
+  <h3 class="text-info">Dane mieszkańca</h3>
+
+  <table class="table">
+    <tbody>
+      <tr><td class="col-3">Imię:</td><td>{{ member.first_name }}</td></tr>
+      <tr><td>Nazwisko:</td><td>{{ member.last_name }}</td></tr>
+      <tr><td>Login:</td><td>{{ member.username }}</td></tr>
+      <tr><td>Liczba udostępnionych książek:</td><td>{{ member.count_no_of_books_owned }}</td></tr>
+    </tbody>
+  </table>
+  <hr/>
+    {% if user.is_superuser %}
+      <a class="btn btn-danger btn-sm" href="{% url 'delete_member' member.pk %}">Usuń</a>
+    {% endif %}
+  <hr/>
+
+  <h4 class="text-info">Udostępnione książki:</h4>
+
+  <ul class="list-group list-group-flush">
+    {% for book in member.books_owned_list %}
+      <li class="list-group-item">
+        <a href="{% url 'book_detail' book.pk %}">{{ book.title }}</a>
+        <span class="text-secondary">({{ book.author }})</span>,
+        {% if book.is_unavailable %}<span class="text-danger">{% endif %}{{ book.display_status }}</span>,
+        zainteresowanych: {{ book.count_interested }}
+        {% if user == book.owner %}
+          <a href="{% url 'book_update' book.pk %}" class="btn btn-primary btn-sm">Edytuj</a>
+          {% if not book.is_borrowed %}
+            <a href="{% url 'book_delete' book.pk %}" class="btn btn-danger btn-sm">Usuń</a>
+          {% endif %}
+        {% endif %}
+      </li>
+    {% endfor %}
+  </ul>
+  <br/>
+  <h4 class="text-info">Wypożyczone książki:</h4>
+
+  <ul class="list-group list-group-flush">
+    {% for book in member.books_borrowed_list %}
+      <li class="list-group-item">
+        <a href="{% url 'book_detail' book.pk %}">{{ book.title }}</a>
+        <span class="text-secondary">({{ book.author }})</span>,
+        udostępniona przez <a href="{% url 'member_detail' book.owner.pk %}">{{ book.owner }}</a>,
+        zainteresowanych: {{ book.count_interested }}
+      </li>
+    {% endfor %}
+  </ul>
+
+{% endblock %}

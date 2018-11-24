@@ -1,0 +1,174 @@
+{% extends "base.html" %}
+
+{% block content %}
+  {% if user.is_superuser and unverified_members %}
+    <div class="container">
+      <h4 class="text-info">Oczekujący na przyjęcie do Dzielnicy</h4>
+        <div class="table-responsive-md">
+          <table class="table table-borderless table-sm">
+            <thead class="thead-light">
+              <tr>
+                <th class="text-right col-sm-1">Lp.</th>
+                <th class="col-sm-2">Login:</th>
+                <th class="col-sm-2">Imię:</th>
+                <th class="col-sm-2">Nazwisko:</th>
+                <th class="col-sm-2">Email:</th>
+                <th></th>
+              </tr>
+            </thead>
+            <tbody>
+              {% for member in unverified_members %}
+                <tr>
+                  <td class="text-right">{{ forloop.counter }}</td>
+                  <td>{{ member.username }}</td>
+                  <td>{{ member.first_name }}</td>
+                  <td>{{ member.last_name }}</td>
+                  <td>{{ member.email }}</td>
+                  <td>
+                    <a class="btn btn-primary btn-sm" href="{% url 'accept_member' member.pk %}">Przyjmij</a>
+                    <a class="btn btn-danger btn-sm" href="{% url 'delete_member' member.pk %}">Odrzuć</a>
+                  </td>
+                </tr>
+              {% endfor %}
+            </tbody>
+          </table>
+        </div>
+      <hr/>
+    </div>
+  {% endif %}
+
+  {% if given_books %}
+    <div class="container">
+      <h4 class="text-info">Książki, które wypożyczyłeś innym</h4>
+        <div class="table-responsive-md">
+          <table class="table table-borderless table-sm">
+            <thead class="thead-light">
+              <tr>
+                <th class="text-right col-sm-1">Lp.</th>
+                <th class="col-sm-5">Książka:</th>
+                <th class="col-sm-2">Wypożyczający:</th>
+                <th></th>
+              </tr>
+            </thead>
+            <tbody>
+              {% for book in given_books %}
+                <tr>
+                  <td class="text-right">{{ forloop.counter }}</td>
+                  <td>
+                    <a href="{% url 'book_detail' book.pk %}">{{ book.title }}</a>
+                    ({{ book.author }})
+                  </td>
+                  <td><a href="{% url 'member_detail' book.display_borrower.pk %}">{{ book.display_borrower }}</a></td>
+                  <td>
+                    <a class="btn btn-primary btn-sm" href="{% url 'return_book' book.pk book.display_borrower.pk %}">
+                      Zwrócona
+                    </a>
+                  </td>
+                </tr>
+              {% endfor %}
+            </tbody>
+          </table>
+        </div>
+      <hr/>
+    </div>
+  {% endif %}
+
+  {% if reservations %}
+    <div class="container">
+      <h4 class="text-info">Mieszkańcy zainteresowani Twoimi książkami</h4>
+        <div class="table-responsive-md">
+          <table class="table table-borderless table-sm">
+            <thead class="thead-light">
+              <tr>
+                <th class="text-right col-sm-1">Lp.</th>
+                <th class="col-sm-2">Zainteresowany:</th>
+                <th class="col-sm-5">Książka:</th>
+                <th></th>
+              </tr>
+            </thead>
+            <tbody>
+              {% for reservation in reservations %}
+                <tr>
+                  <td class="text-right">{{ forloop.counter }}</td>
+                  <td><a href="{% url 'member_detail' reservation.member.pk %}">{{ reservation.member.username }}</a></td>
+                  <td>
+                    <a href="{% url 'book_detail' reservation.book.pk %}">{{ reservation.book.title }}</a>
+                    ({{ reservation.book.author }})
+                  </td>
+                  <td>
+                    <a class="btn btn-primary btn-sm" href="{% url 'borrow_book' reservation.book.pk reservation.member.pk %}">
+                      Wypożycz
+                    </a>
+                  </td>
+                </tr>
+              {% endfor %}
+            </tbody>
+          </table>
+        </div>
+      <hr/>
+    </div>
+  {% endif %}
+
+  {% if borrowed_books %}
+    <div class="container">
+      <h4 class="text-info">Posiadasz wypożyczone</h4>
+        <div class="table-responsive-sm">
+          <table class="table table-borderless table-sm">
+            <thead class="thead-light">
+              <tr>
+                <th class="text-right col-sm-1">Lp.</th>
+                <th class="col-sm-5">Książka:</th>
+                <th>Właściciel:</th>
+              </tr>
+            </thead>
+            <tbody>
+              {% for book in borrowed_books %}
+                <tr>
+                  <td class="text-right">{{ forloop.counter }}</td>
+                  <td>
+                    <a href="{% url 'book_detail' book.pk %}">{{ book.title }}</a>
+                    ({{ book.author }})
+                  </td>
+                  <td><a href="{% url 'member_detail' book.owner.pk %}">{{ book.owner }}</a></td>
+                </tr>
+              {% endfor %}
+            </tbody>
+          </table>
+        </div>
+      <hr/>
+    </div>
+  {% endif %}
+
+  {% if interested_in %}
+    <div class="container">
+      <h4 class="text-info">Twoja lista życzeń</h4>
+        <div class="table-responsive-sm">
+          <table class="table table-borderless table-sm">
+            <thead class="thead-light">
+              <tr>
+                <th class="text-right col-sm-1">Lp.</th>
+                <th class="col-sm-5">Książka:</th>
+                <th>Właściciel:</th>
+                <th></th>
+              </tr>
+            </thead>
+            <tbody>
+              {% for reservation in interested_in %}
+                <tr>
+                  <td class="text-right">{{ forloop.counter }}</td>
+                  <td>
+                    <a href="{% url 'book_detail' reservation.book.pk %}">{{ reservation.book.title }}</a>
+                    ({{ reservation.book.author }})
+                  </td>
+                  <td><a href="{% url 'member_detail' reservation.book.owner.pk %}">{{ reservation.book.owner }}</a></td>
+                  <td><a href="{% url 'withdraw_interest' reservation.book.pk %}" class="btn btn-danger btn-sm">Rezygnuję</a></td>
+                </tr>
+              {% endfor %}
+            </tbody>
+          </table>
+        </div>
+      <hr/>
+    </div>
+  {% endif %}
+
+{% endblock %}

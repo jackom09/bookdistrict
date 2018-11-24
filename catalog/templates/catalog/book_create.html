@@ -1,0 +1,46 @@
+{% extends 'base.html' %}
+
+{% block title %}Dodaj książkę{% endblock %}
+
+{% block content %}
+
+  {% if book %}
+    <h2>Zaktualizuj książkę</h2>
+  {% else %}
+    <h2>Dodaj książkę</h2>
+  {% endif %}
+
+  <form method="post">
+    {% csrf_token %}
+
+    <table class="table">
+      <tbody>
+        <tr><td>Tytuł:</td><td>{{ form.title }}</td></tr>
+        <tr><td>Autor:</td><td>{{ form.author }}</td></tr>
+        <tr><td>Liczba stron:</td><td>{{ form.no_of_pages }}</td></tr>
+        <tr><td>Kategoria:</td><td>{{ form.genre }}</td></tr>
+        <tr><td>Opis:</td><td>{{ form.description }}</td></tr>
+        {% if book %}
+          <tr>
+            <td>Status:</td>
+            <td>
+              {{ book.display_status }}
+              {% if book.status == 'D' or book.status == 'Z' %}
+                <a class="btn btn-danger btn-sm" href="{% url 'book_status_change' book.pk %}">
+                  Ustaw jako niedostępną
+                </a>
+              {% elif book.status == 'N' %}
+                <a class="btn btn-success btn-sm" href="{% url 'book_status_change' book.pk %}">
+                  Ustaw jako dostępną
+                </a>
+              {% endif %}
+            </td>
+          </tr>
+        {% endif %}
+      </tbody>
+    </table>
+    <br>
+    <input class="btn btn-primary" type="submit" value="Zapisz"/>
+  </form>
+
+{% endblock %}
