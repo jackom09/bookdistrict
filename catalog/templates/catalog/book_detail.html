@@ -62,7 +62,24 @@
   </div>
   <hr/>
 
-  <h5 class="text-info">Zainteresowani wypożyczeniem:</h5>
+  <h5 class="text-info">Komentarze <a class="btn btn-primary btn-sm" href="{% url 'comment_create' book.pk %}">Dodaj</a></h5>
+  {% for comment in comments %}
+    <p class="small">
+      <strong>{{ comment.title }}</strong>
+      <br>
+      {{ comment.comment_text }}
+      <br>
+      <i>Autor: <a href="{% url 'member_detail' comment.member.id %}">{{ comment.member }}</a>, utworzony: {{ comment.created }}</i>
+      {% if user == comment.member or user.is_superuser %}
+        <a href="{% url 'comment_delete' comment.book.pk comment.pk %}">Usuń komentarz</a>
+      {% endif %}
+    </p>
+  {% endfor %}
+
+{% endblock %}
+
+{% block rightbar %}
+  <h6 class="text-info">Zainteresowani</h6>
 
   <ul class="list-group list-group-flush">
     {% for member in book.interested_list %}
@@ -70,7 +87,7 @@
         <a href="{% url 'member_detail' member.pk %}">
           {{ member.first_name }}
           {{ member.last_name }}
-          (login: {{ member.username }})
+          ({{ member.username }})
         </a>
         {% if book.is_available and user == book.owner %}
           <a href="{% url 'borrow_book' book.pk member.pk %}" class="btn btn-primary btn-sm">Wypożycz</a>
@@ -78,5 +95,4 @@
       </li>
     {% endfor %}
   </ul>
-
 {% endblock %}

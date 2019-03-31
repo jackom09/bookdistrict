@@ -1,6 +1,6 @@
 from django.contrib.auth.forms import UserCreationForm
 from django.forms import CharField, EmailField
-from django.forms import Form, ModelForm, Textarea, TextInput, NumberInput
+from django.forms import ModelForm, Textarea, TextInput, NumberInput
 from .models import Book, User
 
 

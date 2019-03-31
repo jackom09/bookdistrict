@@ -1,10 +1,10 @@
-from django.shortcuts import HttpResponseRedirect
+from django.shortcuts import HttpResponseRedirect, get_object_or_404
 from django.urls import reverse, reverse_lazy
 from django.db.models import Q
 from django.views.generic import TemplateView, ListView, DetailView, RedirectView
 from django.views.generic import CreateView, UpdateView, DeleteView
 from django.contrib.auth.mixins import LoginRequiredMixin
-from .models import User, Book, Reservation
+from .models import User, Book, Reservation, MemberComment
 from .forms import BookCreateForm, SignUpForm, UserEditForm
 
 
@@ -112,7 +112,7 @@ class BookDetail(LoginRequiredMixin, DetailView):
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-        context[''] = ''
+        context['comments'] = MemberComment.objects.filter(book=self.object)
         return context
 
 
@@ -137,7 +137,7 @@ class BookUpdate(LoginRequiredMixin, UpdateView):
 
     # wykonuje tylko przekierowanie jeżeli user to nie owner
     def get(self, request, *args, **kwargs):
-        book = Book.objects.get(pk=self.kwargs['pk'])
+        book = get_object_or_404(Book, pk=self.kwargs['pk'])
         if request.user != book.owner:
             return HttpResponseRedirect(reverse('my_book_list'))
         return super(BookUpdate, self).get(request, *args, **kwargs)
@@ -147,7 +147,7 @@ class BookUpdateStatus(LoginRequiredMixin, RedirectView):
     pattern_name = 'book_update'
 
     def get(self, request, *args, **kwargs):
-        book = Book.objects.get(pk=self.kwargs['pk'])
+        book = get_object_or_404(Book, pk=self.kwargs['pk'])
         if book.is_unavailable:
             book.status = 'D'
         elif book.is_available:
@@ -163,7 +163,7 @@ class BookDelete(LoginRequiredMixin, DeleteView):
 
     # wykonuje tylko przekierowanie jeżeli user to nie owner
     def get(self, request, *args, **kwargs):
-        book = Book.objects.get(pk=self.kwargs['pk'])
+        book = get_object_or_404(Book, pk=self.kwargs['pk'])
         if request.user != book.owner:
             return HttpResponseRedirect(reverse('my_book_list'))
         return super(BookDelete, self).get(request, *args, **kwargs)
@@ -185,7 +185,7 @@ class ShowInterest(LoginRequiredMixin, RedirectView):
     pattern_name = 'book_detail'
 
     def get(self, request, *args, **kwargs):
-        book = Book.objects.get(pk=self.kwargs['pk'])
+        book = get_object_or_404(Book, pk=self.kwargs['pk'])
         member = request.user
 
         if Reservation.objects.filter(book=book, member=member).exists():
@@ -200,9 +200,9 @@ class WithdrawInterest(LoginRequiredMixin, RedirectView):
     pattern_name = reverse_lazy('book_list')
 
     def get(self, request, *args, **kwargs):
-        book = Book.objects.get(pk=self.kwargs['pk'])
+        book = get_object_or_404(Book, pk=self.kwargs['pk'])
         member = request.user
-        reservation = Reservation.objects.get(book=book, member=member)
+        reservation = get_object_or_404(Reservation, book=book, member=member)
 
         if reservation.has_borrow_status:
             return HttpResponseRedirect(reverse('book_list'))
@@ -216,9 +216,9 @@ class BorrowBook(LoginRequiredMixin, RedirectView):
     pattern_name = reverse_lazy('book_detail')
 
     def get(self, request, *args, **kwargs):
-        book = Book.objects.get(pk=self.kwargs['book_pk'])
-        member = User.objects.get(pk=self.kwargs['member_pk'])
-        reservation = Reservation.objects.get(book=book, member=member)
+        book = get_object_or_404(Book, pk=self.kwargs['book_pk'])
+        member = get_object_or_404(User, pk=self.kwargs['member_pk'])
+        reservation = get_object_or_404(Reservation, book=book, member=member)
 
         book.status = 'W'
         book.save()
@@ -232,12 +232,54 @@ class ReturnBook(LoginRequiredMixin, RedirectView):
     pattern_name = reverse_lazy('book_list')
 
     def get(self, request, *args, **kwargs):
-        book = Book.objects.get(pk=self.kwargs['book_pk'])
-        member = User.objects.get(pk=self.kwargs['member_pk'])
-        reservation = Reservation.objects.get(book=book, member=member)
+        book = get_object_or_404(Book, pk=self.kwargs['book_pk'])
+        member = get_object_or_404(User, pk=self.kwargs['member_pk'])
+        reservation = get_object_or_404(Reservation, book=book, member=member)
 
         book.status = 'D'
         book.save()
         reservation.delete()
 
         return HttpResponseRedirect(reverse('book_detail', kwargs={'pk': book.pk}))
+
+
+class CommentCreate(LoginRequiredMixin, CreateView):
+    model = MemberComment
+    fields = ['title', 'comment_text']
+    context_object_name = 'comment'
+    template_name = 'catalog/comment_create.html'
+
+    def form_valid(self, form):
+        form.instance.member = self.request.user
+        form.instance.book = get_object_or_404(Book, pk=self.kwargs['pk'])
+        return super().form_valid(form)
+
+    def get_success_url(self):
+        pk = self.kwargs['pk']
+        return reverse_lazy('book_detail', kwargs={'pk': pk})
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context['book'] = get_object_or_404(Book, pk=self.kwargs['pk'])
+        return context
+
+
+class CommentDelete(LoginRequiredMixin, DeleteView):
+    model = MemberComment
+    context_object_name = 'comment'
+    template_name = 'catalog/book_confirm_delete.html'
+
+    # wykonuje tylko przekierowanie jeżeli user to nie owner lub administrator
+    def get(self, request, *args, **kwargs):
+        comment = MemberComment.objects.get(pk=self.kwargs['comment_pk'])
+        if request.user != comment.member or not request.user.is_superuser:
+            return HttpResponseRedirect(reverse('my_book_list'))
+        return super(CommentDelete, self).get(request, *args, **kwargs)
+
+    def get_object(self, queryset=None):
+        comment = get_object_or_404(MemberComment, pk=self.kwargs['comment_pk'])
+        return comment
+
+    def get_success_url(self):
+        pk = self.kwargs['pk']
+        return reverse_lazy('book_detail', kwargs={'pk': pk})

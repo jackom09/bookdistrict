@@ -10,15 +10,15 @@
         <table class="table table-borderless table-sm">
           <thead class="thead-light">
             <tr>
-              <th class="text-right col-sm-1">Lp.</th>
-              <th class="col-sm-2">Login:</th>
-              <th class="col-sm-2">Imię:</th>
-              <th class="col-sm-2">Nazwisko:</th>
+              <th scope="col" class="text-right th-sm-1">Lp.</th>
+              <th scope="col" class="th-sm-2">Login:</th>
+              <th scope="col" class="th-sm-2">Imię:</th>
+              <th scope="col" class="th-sm-2">Nazwisko:</th>
               {% if user.is_superuser %}
-                <th class="col-sm-2">Adres email:</th>
+                <th scope="col" class="th-sm-3">Adres email:</th>
               {% endif %}
-              <th class="text-center col-sm-1">Liczba udostępnionych książek:</th>
-              <th></th>
+              <th scope="col" class="text-center th-sm-2">Liczba udostępnionych książek:</th>
+              <th scope="col"></th>
             </tr>
           </thead>
           <tbody>
@@ -32,9 +32,11 @@
                   <td>{{ member.email }}</td>
                 {% endif %}
                 <td class="text-center">{{ member.count_no_of_books_owned }}</td>
-                {% if user.is_superuser %}
-                  <td><a class="btn btn-danger btn-sm" href="{% url 'delete_member' member.pk %}">Usuń</a></td>
-                {% endif %}
+                <td>
+                  {% if user.is_superuser %}
+                    <a class="btn btn-danger btn-sm" href="{% url 'delete_member' member.pk %}">Usuń</a>
+                  {% endif %}
+                </td>
               </tr>
             {% endfor %}
           </tbody>

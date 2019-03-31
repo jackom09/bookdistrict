@@ -1,0 +1,15 @@
+{% extends 'base.html' %}
+
+{% block title %}Komentarz{% endblock %}
+
+{% block content %}
+  <h2>Komentarz</h2>
+  <p>Dodaj komentarz lub opinię o książce <a href="{% url 'book_detail' book.pk %}">"{{ book.title }}"</a></p>
+  <form method="post">
+    {% csrf_token %}
+    <p>Tytuł: {{ form.title }}</p>
+    <p>Komentarz: {{ form.comment_text }}</p>
+    <input class="btn btn-primary" type="submit" value="Publikuj"/>
+    <a class="btn btn-danger" href="{% url 'book_detail' book.pk %}">Zrezygnuj</a>
+  </form>
+{% endblock %}
